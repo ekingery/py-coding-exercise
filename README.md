@@ -3,6 +3,8 @@ Identifying Conditional Skip Patterns:
 
 Note: This is a private repository.  Do not share it with anyone and please work on this alone.
 
+Please feel free to contact us if you have any questions especially if what we're asking for isn't 100% clear (john@knowledgehound.com).
+
 The Challenge:
 --------------
 As discussed in the first part of our technical interview, we want to determine which questions were shown to each respondent by reverse engineering the conditional statements that determine which users saw which questions in a survey.  We'd like you to implement a simplified version of that functionality.
@@ -58,3 +60,6 @@ Other:
  - We hope that you can complete this on your own, but if the requirements aren't clear or something seems wrong, ask questions.  We're humans... we make mistakes!  
 
  - The code we're providing you isn't perfect.  Change it where you need to.  Thoughtful critiques are welcome.
+
+ Happy Hacking!
+     - The KH Team
