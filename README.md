@@ -1,9 +1,9 @@
 Identifying Conditional Skip Patterns
 =====================================
 
-*Note*: This is a private repository. Do not share it with anyone and please work on this alone.
+**Note**: This is a private repository. Do not share it with anyone and please work on this alone.
 
-Please feel free to contact us if you have any questions especially if what we're asking for isn't 100% clear (tech@knowledgehound.com).
+Please feel free to contact us if you have any questions especially if what we're asking for isn't 100% clear &ndash; *tech@knowledgehound.com*.
 
 The Challenge
 -------------
@@ -15,19 +15,19 @@ In this portion of the interview, we're interested in your craftsmanship: the qu
 The Spec
 --------
 
-The `survey.py` file in this repository represents an existing codebase. Please modify it so that each question can report the question(s), if any, which determined whether or not it was shown to a respondent.
+The *survey.py* file in this repository represents an existing codebase. Please modify it so that each question can report the question(s), if any, which determined whether or not it was shown to a respondent.
 
 In particular, implement the method, `get_conditionals()` on `Question` which returns a list of dictionaries showing which conditionals determined the visibility of that instance of `Question`.
 
 Example of a working implementation processing *simple_sample.csv*:
 
-    >>> from survey import *
-    >>> dataset = SurveyDataSet('simple_sample.csv')
+    >>> import survey
+    >>> dataset = survey.SurveyDataSet('simple_sample.csv')
     >>> pets = dataset.get_question("Do you have pets?")
-    >>> print pets.get_conditionals()
+    >>> print(pets.get_conditionals())
     []
     >>> dogs = dataset.get_question("Do you have a dog?")
-    >>> print dogs.get_conditionals()
+    >>> print(dogs.get_conditionals())
     [{'where_response_equals': 'Yes', 'determined_by': <Question: Do you have pets?>}]
 
 Guidelines
@@ -61,6 +61,6 @@ Other
 
  - The code we're providing you isn't perfect. Change it where you need to. Thoughtful critiques are welcome.
 
- Happy Hacking!
+Happy Hacking!
 
-   \- The KH Team
+&ensp; &ndash; The KH Team
