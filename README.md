@@ -3,7 +3,7 @@ Identifying Conditional Skip Patterns
 
 **Note**: This is a private repository. Do not share it with anyone and please work on this alone.
 
-Please feel free to contact us if you have any questions especially if what we're asking for isn't 100% clear &ndash; *tech@knowledgehound.com*.
+Please feel free to contact us if you have any questions especially if what we're asking for isn't 100% clear – *tech@knowledgehound.com*.
 
 The Challenge
 -------------
@@ -63,4 +63,4 @@ Other
 
 Happy Hacking!
 
-&ensp; &ndash; The KH Team
+– The KH Team
