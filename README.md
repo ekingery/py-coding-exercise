@@ -33,7 +33,7 @@ Example of a working implementation processing *simple_sample.csv*:
 Guidelines
 ----------
 
-Functionality
+**Functionality**
 
  - Your solution only needs to work for radio-button questions. That includes True/False or "Select exactly one of the following". The literal answer provided by the user is the value of the cell. If the cell is an empty string, the user did not see and therefore did not respond to that question
 
@@ -47,7 +47,7 @@ Functionality
 
  - All question labels (the first row of the CSV) will be unique. No trickery from us there.
 
-Other
+**Other**
 
  - Use Python, its standard library, and any dependencies you would include if this were code going to production.
 
