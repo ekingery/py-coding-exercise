@@ -17,9 +17,9 @@ class SurveyDataSet(object):
     def __init__(self, dataset_filename):
         # open the data file and create the question objects
         self.questions = []
-        with open(dataset_filename, 'rbU') as csv_file:
+        with open(dataset_filename) as csv_file:
             reader = csv.reader(csv_file)
-            variable_names = reader.next()
+            variable_names = next(reader)
 
             data = OrderedDict((name, []) for name in variable_names)
             for line in reader:
@@ -32,8 +32,8 @@ class SurveyDataSet(object):
                     column += 1
 
             for variable in data:
-                self.questions.append(
-                    Question(name=variable, data=data[variable], parent_dataset=self)
+                self.questions.append(Question(
+                    name=variable, data=data[variable], parent_dataset=self)
                 )
 
     def get_question(self, question_label):
@@ -54,7 +54,7 @@ class SurveyDataSet(object):
 class Question(object):
     """A single question.
 
-    Initialized with name, a list of responses, and a reference to its parent study.
+    Initialized with name, list of responses, reference to its parent study.
 
     """
     def __init__(self, name, data, parent_dataset):
@@ -62,14 +62,8 @@ class Question(object):
         self.data = data
         self.parent_dataset = parent_dataset
 
-    def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
-        return u"Question: {name}".format(name=self.name)
-
     def __repr__(self):
-        return "<{}>".format(self)
+        return "<{}: {}>".format(type(self).__name__, self.name)
 
     @property
     def sample_size(self):
@@ -110,7 +104,7 @@ class Question(object):
         Example:
             "Do you have a dog?" is only asked to respondents who answered
             "Yes" to "Do you have pets?".  Calling <Question: "Do you have a
-            dog?">'s conditionals method yeilds:
+            dog?">'s conditionals method yields:
             [
                 {
                     "determined_by": <Question: Do you have pets?>
