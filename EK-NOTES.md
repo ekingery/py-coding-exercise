@@ -15,11 +15,18 @@ the question name, the responses for that question, and a reference to the
 
 ### Pseudocode ###
 
-    foreach survey_response (line in the csv)
-      foreach question_response (column in the csv)
-        build the ordered dictionary (data)
-    foreach question in ordered dictionary (data)
-      self.questions.append(Question(question_name, [res1, res2, res3], self)))
+    foreach survey_response (line in the csv) O(n)
+      foreach question_response (column in the csv) O(m)
+        build the ordered dictionary (data) O(1) lookup + O(1) append
+    foreach question in ordered dictionary (column in the csv) O(m)
+      self.questions.append(Question(question_name, [res1, res2, res3], self))) O(1) append
+
+This solution has a time complexity of `O(n * m)` assuming ordered dictionary 
+and list getters and appends are O(1).
+[(Reference)](https://wiki.python.org/moin/TimeComplexity)
+
+* n = # of rows (responses) in the csv
+* m = # of columns (questions) in the csv
 
 Solution Documentation
 ----------------------
@@ -30,30 +37,36 @@ Once this data is stored as class member data (`self.conditionals`),
 `get_conditionals()` can be implemented as a simple getter for that data.
 
 ### Solution Pseudocode ###
-This solution has a time complexity of `O(n^2)`
 
-    foreach survey_response (line in the csv)
-      foreach question_response (column in the csv)
-        build the ordered dictionary (data)
-    foreach question in ordered dictionary (data)
-      determinants = self.get_determinants()
+    foreach survey_response (line in the csv) O(n)
+      foreach question_response (column in the csv) O(m)
+        build the ordered dictionary (data) O(1) lookup + O(1) append
+    foreach question in ordered dictionary (column in the csv) O(m)
+      determinants = self.get_determinants() O(m * n)
       self.questions.append(
         Question(question_name, [res1, res2, res3], determinants, self)
-      )
+      ) O(1) append
 
-    def get_determinants(self):
-      if list of results contains None(s)
-        foreach q in list of questions from 0:current
-          if results in q are not all the same
-            'overlay' q and current_q
-            1. does every None result in current_q correspond to the same response in q?
-              - if no, we do not have a determinant
-              - if yes, we have a determinant candidate
-                2. Is response in q = the response to any non None responses in current_q?
-                - if yes, we do not have a determinant
-                - if no, we have a determinant
-                  returnval.append(q) 
+    def get_determinants(self): O(m * n)
+      if list of results contains no None(s), return O(n)
+      foreach q in list of questions from 0:current O(m)
+        if results in q are not all the same O(n)
+          'overlay' q and current_q O(m) - iterate and compare each response
+          1. does each None in current_q correspond to the same response in q? O(1)
+            - if no, we do not have a determinant
+            - if yes, we have a determinant candidate
+              2. does response in q also = response to another non-None response in current_q? O(1)
+              - if yes, we do not have a determinant
+              - if no, we have a determinant
+                returnval.append(q) O(1)
       return returnval
+
+This solution has a time complexity of `O(m^2 * n)` assuming ordered dictionary 
+and list getters and appends are O(1).
+[(Reference)](https://wiki.python.org/moin/TimeComplexity)
+
+* n = # of rows (responses) in the csv
+* m = # of columns (questions) in the csv
 
 ### Misc. Notes ###
 * For the `self.conditional` member data, check that references to the objects are passed / stored,
@@ -70,7 +83,7 @@ compatibility. Ordinarily I would include these changes in a separate PR, but
 in this case given I don't have PR access to the originally forked repo. 
 Instead I isolated them in the first commit so they can be cherry-picked if you find them 
 worthwhile to include in the main [skip patterns repo](https://bitbucket.org/knowledgehound/skip_patterns). 
-The following are my notes (I'd include these in the PR):
+The following are my notes (I would typically include these in a PR):
 
 * Removed `unicode` and `str` magic methods no longer necessary in python3
 * Tweaked line length to adhere to [PEP-8](https://www.python.org/dev/peps/pep-0008/)
