@@ -22,7 +22,7 @@ class SurveyDataSet(object):
             headers = next(reader)
 
             question_results = OrderedDict((q_name, []) for q_name in headers)
-            # With more time, I would break this loop into a separate fn()
+            # testability could be improved by refactoring this loop to a fn()
             for line in reader:
                 column = 0
                 for q_name in headers:
@@ -32,15 +32,12 @@ class SurveyDataSet(object):
                     question_results[q_name].append(data_point)
                     column += 1
 
-            for question, results in question_results.items():
+            for q, res in question_results.items():
                 conds = self.get_conditionals(
-                    Util.ordered_dict_slice(question_results, question)
+                    Util.ordered_dict_slice(question_results, q)
                 )
                 self.questions.append(Question(
-                    name=question,
-                    data=results,
-                    conditionals=conds,
-                    parent_dataset=self
+                    name=q, data=res, conditionals=conds, parent_dataset=self
                 ))
 
     def get_conditionals(self, question_results):
@@ -49,24 +46,24 @@ class SurveyDataSet(object):
         Iterate over the given data to determine if None values in the argument
         question results indicate a conditional result.
         """
-        last_question_results = question_results.popitem()[1]
-        if 0 == last_question_results.count(None):
+        last_q_results = question_results.popitem()[1]
+        if 0 == last_q_results.count(None):
             return []
 
-        # Don't include RespondentID as a conditional
+        # Do not include RespondentID as a conditional
         question_results.pop("RespondentID", None)
 
         conditionals = []
-        for question, results in question_results.items():
+        for q, res in question_results.items():
             # copy data into a set and check length to find out if there is
             # more than 1 item in the set - if so, they are not all the same
-            if (len(set(results)) <= 1):
+            if (len(set(res)) <= 1):
                 break
             overlay_result = Util.get_conditional_overlay_value(
-                results, last_question_results
+                res, last_q_results
             )
             if (overlay_result):
-                conditionals.append((question, overlay_result))
+                conditionals.append((q, overlay_result))
         return conditionals
 
     def get_question(self, question_label):
@@ -132,7 +129,7 @@ class Question(object):
         list is a dict in the format:
             {
                 "determined_by": ..., # instance of question
-                "where_result_equals": ..., # response as string
+                "where_result_equals": ..., # result as string
             }
 
         Example:
@@ -145,12 +142,13 @@ class Question(object):
                     "where_result_equals": "Yes"
                 }
             ]
+
         """
         dict_list = []
-        for q, a in self.conditionals:
+        for q, res in self.conditionals:
             dict_list.append(
                 {"determined_by": self.parent_dataset.get_question(q),
-                 "where_result_equals": a}
+                 "where_result_equals": res}
             )
         return dict_list
 
@@ -158,8 +156,8 @@ class Question(object):
 class Util(object):
     """Generic utility functions for data manipulation
 
-    In many cases these are inefficient and probably not very pythonic, but
-    they can be safely separated and refactored later as needed.
+    These are inefficient and possibly not very pythonic, but
+    they could be safely separated and refactored later as needed.
     """
 
     @staticmethod
@@ -183,12 +181,13 @@ class Util(object):
         a set of unique items in list_a. Returns the complement of the unique
         items from list_a.
 
-        An overlay is defined as a unique set of values in list_a which
-        correspond 1:1 with None values in list_b in the same list position.
+        An overlay is defined as a unique value in list_a which
+        corresponds 1:1 with None values in list_b in the same list position.
         This function is used to determine "conditionality", meaning the result
         in list_a potentially is one which ended the line of questioning
         in a survey (hence the corresponding None values in list_b).
         """
+        # Create the list of overlay candidates
         a_matches = [a for a, b in zip(list_a, list_b) if b is None]
         if not a_matches:
             return None
@@ -197,19 +196,25 @@ class Util(object):
         if (len(a_matches) != a_matches.count(a_matches[0])):
             return None
 
-        # If >1 result overlays a None value, it's not a conditional
+        # If >1 result overlays a None value
         if (len(a_matches) != list_a.count(a_matches[0])):
             return None
 
-        # create a set of all results not corresponding to a None result in b
+        # Create a set of all results not corresponding to a None result in b
         all_conds = set(
-            [c_val for c_val in list_a
-             if c_val and c_val != a_matches[0]]
+            [c_val for c_val in list_a if c_val and c_val != a_matches[0]]
         )
 
-        # if >1 response in the complement of a_matches, it's not a conditional
-        # If we did want to include all unique answers, return all_conds
+        # if > 1 result in the complement of a_matches
         if len(all_conds) != 1:
+            # (If we wanted to include all unique results, return all_conds)
             return None
 
+        # All results are the same, pop one off and return it as a scalar
         return all_conds.pop()
+
+if __name__ == '__main__':
+    # verify the example output when called via CLI
+    dataset = SurveyDataSet("simple_sample.csv")
+    dog_q = dataset.get_question("Do you have a dog?")
+    print(dog_q.get_conditionals())
