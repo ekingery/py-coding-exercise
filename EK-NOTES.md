@@ -15,11 +15,11 @@ the question name, the responses for that question, and a reference to the
 
 ### Pseudocode ###
 
-    foreach survey_response (line in the csv) O(n)
-      foreach question_response (column in the csv) O(m)
-        build the ordered dictionary (data) O(1) lookup + O(1) append
-    foreach question in ordered dictionary (column in the csv) O(m)
-      self.questions.append(Question(question_name, [res1, res2, res3], self))) O(1) append
+    foreach survey_response (line in the csv) | O(n)
+      foreach question_response (column in the csv) | *O(m)
+        build the ordered dictionary (data) | * ((O(1) lookup + O(1) append))
+    foreach question in ordered dictionary (column in the csv) | O(m)
+      create a new question and append it to the member data list | O(1) append
 
 This solution has a time complexity of `O(n * m)` assuming ordered dictionary 
 and list getters and appends are O(1).
@@ -30,7 +30,7 @@ and list getters and appends are O(1).
 
 Solution Documentation
 ----------------------
-In order to implement `get_conditionals()`, we want to pre-compute and store
+In order to implement `Question.get_conditionals()`, we want to pre-compute and store
 the list of Questions which could be determiners for each Question in the survey.
 
 Once this data is stored as class member data (`self.conditionals`),
@@ -38,28 +38,27 @@ Once this data is stored as class member data (`self.conditionals`),
 
 ### Solution Pseudocode ###
 
-    foreach survey_response (line in the csv) O(n)
-      foreach question_response (column in the csv) O(m)
-        build the ordered dictionary (data) O(1) lookup + O(1) append
-    foreach question in ordered dictionary (column in the csv) O(m)
-      determinants = self.get_determinants() O(m * n)
-      self.questions.append(
-        Question(question_name, [res1, res2, res3], determinants, self)
-      ) O(1) append
+    foreach survey_response (line in the csv) | O(n)
+      foreach question_response (column in the csv) | *O(m)
+        build the ordered dictionary (data) | *((O(1) lookup + O(1) append))
+    foreach question in ordered dictionary (column in the csv) | O(m)
+      get_conditionals(ordered dictionary from first to current element) | *O(m * n)
+      create a new question and append it to the member data list | O(1) append
 
-    def get_determinants(self): O(m * n)
-      if list of results contains no None(s), return O(n)
-      foreach q in list of questions from 0:current O(m)
-        if results in q are not all the same O(n)
-          'overlay' q and current_q O(m) - iterate and compare each response
-          1. does each None in current_q correspond to the same response in q? O(1)
-            - if no, we do not have a determinant
-            - if yes, we have a determinant candidate
-              2. does response in q also = response to another non-None response in current_q? O(1)
-              - if yes, we do not have a determinant
-              - if no, we have a determinant
-                returnval.append(q) O(1)
-      return returnval
+    get_conditionals(list of questions): O(m * n)
+      if list of results contains no None(s), return | O(n)
+      foreach q in dictionary of questions | O(m)
+        return if results in q are all the same | O(n)
+        conditional_list.append(overlay(q, current_q)) | O(n)
+      return conditional_list
+
+    overlay(list_a, list_b) O(n)
+      1. does each None in current_q correspond to the same response in q? | O(n)
+      - if no, we do not have a determinant
+      - if yes, we have a determinant candidate
+        2. does the response in q show up anywhere else (non None matching)? | +O(n)
+        - if no, we have a determinant
+        - if yes, return response from list_a corresponding to None in list_b
 
 This solution has a time complexity of `O(m^2 * n)` assuming ordered dictionary 
 and list getters and appends are O(1).
@@ -68,13 +67,13 @@ and list getters and appends are O(1).
 * n = # of rows (responses) in the csv
 * m = # of columns (questions) in the csv
 
-### Misc. Notes ###
+### Misc. Notes / TODO Time Permitting ###
 * For the `self.conditional` member data, check that references to the objects are passed / stored,
   as opposed to copies.
- * It looks like references are stored in parent_dataset. I"m assuming we're good
+ * It looks like references are stored in parent_dataset. I'm assuming we're good
    here but worth further eval if this were production code / I had time to
    learn more about references in python!
-
+* I'm curious in the skip patterns google doc csv, why "Where do you shop for pet food?" does not register "What kinds of pets do you have?" as a conditional. It seems correct that it doesn't but I didn't see how/why None values would actually be getting filtered out and not overlay / matched on.
 
 Python3 Compatibility
 ---------------------
