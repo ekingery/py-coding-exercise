@@ -55,11 +55,11 @@ Once this data is stored as class member data (`self.conditionals`),
     overlay(list_a, list_b) O(n)
       create a set of result matches from `a` which correspond with None items in `b` | O(n)
       1. does each None in current_q correspond to the same result in q? | +O(n)
-      - if no, we do not have a determinant
+        - if no, we do not have a determinant
       2. does the result in q show up anywhere else (non None matching)? | +O(n)
-       - if yes, we do not have a determinant
+        - if yes, we do not have a determinant
       3. Does the complement of the matching values contain all of the same result value? | +O(n)
-       - if yes, we have a determinant, return it
+        - if yes, we have a determinant, return it
 
 This solution has a time complexity of `O(m^2 * n)` assuming ordered dictionary 
 and list getters and appends are O(1).
@@ -70,15 +70,15 @@ and list getters and appends are O(1).
 
 ### Misc. Notes / TODO Time Permitting ###
 * I recorded my time and attached a report: ek-time-log-report.pdf
- * I spent about 3 hours figuring out the current code and the solution
- * I spent about 6 hours writing python code
+  * I spent about 3 hours figuring out the current code and the solution
+  * I spent about 6 hours writing python code
 
 #### Technical Notes / Concerns ####
 * I would be curious to run this against a larger data set, to spot check for
     correctness and to get a sense for real-world runtime
 * For the `self.conditional` member data, check that references to the objects are passed / stored,
   as opposed to copies.
- * It looks like references are stored in parent_dataset. I'm assuming we're good
+  * It looks like references are stored in parent_dataset. I'm assuming we're good
    here but worth further eval if this were production code / I had time to
    learn more about references in python!
 * I'm curious in the skip patterns sample data csv (from the interview / google doc), why "Where do you shop for pet food?" does not register "What kinds of pets do you have?" as a conditional. It seems correct that it doesn't, but I didn't see how/why None values would actually be getting filtered out and not overlay / matched on.
@@ -94,12 +94,11 @@ The following are my notes (I would typically include these in a PR):
 * Removed `unicode` and `str` magic methods no longer necessary in python3
 * Tweaked line length to adhere to [PEP-8](https://www.python.org/dev/peps/pep-0008/)
 * Simplified the csv open
- * 'r' is default, 'b' is no longer necessary, [U is deprecated](https://docs.python.org/3/library/functions.html#open)
+  * 'r' is default, 'b' is no longer necessary, [U is deprecated](https://docs.python.org/3/library/functions.html#open)
 * `__repr__` as written was causing an infinite recursive loop
- * I'm curious as to the reason for this
- * I made the output format match the original implementation, 
+  * I wonder why?
+  * I made the output format match the original implementation, 
    however it seems that using `__str__()` as opposed to `__repr__()`
    might be preferred because `repr()` is suggested to return a 
    [valid python expression](https://docs.python.org/3/library/functions.html#repr)
- * I found the previous two items worth noting, but not worth spending much time on
-
+  * I found the previous two items worth noting, but not worth spending much time on
