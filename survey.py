@@ -29,6 +29,8 @@ class SurveyDataSet(object):
                     data_point = line[column].strip()
                     if data_point == "":
                         data_point = None
+                    elif ',' in data_point:
+                        data_point = tuple(data_point.split(','))
                     question_results[q_name].append(data_point)
                     column += 1
 
