@@ -87,7 +87,10 @@ class TestSurvey(unittest.TestCase):
         grocery_q = dataset.get_question("Where do you shop for groceries?")
 
         self.assertEqual([], pets_q.get_conditionals())
-        self.assertEqual([], dog_parks_q.get_conditionals())
+        self.assertEqual(
+            [{'determined_by': pet_kinds_q, 'where_result_equals': 'Dog'}],
+            dog_parks_q.get_conditionals()
+        )
         self.assertEqual([], grocery_q.get_conditionals())
         self.assertEqual(
             [{"determined_by": pets_q, "where_result_equals": "Yes"}],
