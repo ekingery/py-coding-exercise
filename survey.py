@@ -61,11 +61,11 @@ class SurveyDataSet(object):
             # more than 1 item in the set - if so, they are not all the same
             if (len(set(res)) <= 1):
                 break
-            overlay_result = Util.get_conditional_overlay_value(
+            complement_result = Util.get_conditional_complements(
                 res, last_q_results
             )
-            if (overlay_result):
-                conditionals.append((q, overlay_result))
+            if (complement_result):
+                conditionals.append((q, complement_result))
         return conditionals
 
     def get_question(self, question_label):
@@ -148,10 +148,12 @@ class Question(object):
         """
         dict_list = []
         for q, res in self.conditionals:
-            dict_list.append(
-                {"determined_by": self.parent_dataset.get_question(q),
-                 "where_result_equals": res}
-            )
+            if len(res) == 1:
+                res = res[0]
+            od = OrderedDict()
+            od["determined_by"] = self.parent_dataset.get_question(q)
+            od["where_result_equals"] = res
+            dict_list.append(od)
         return dict_list
 
 
@@ -178,42 +180,49 @@ class Util(object):
         return slice
 
     @staticmethod
-    def get_conditional_overlay_value(list_a, list_b):
-        """ Helper method for determing if None values from list_b "overlay"
-        a set of unique items in list_a. Returns the complement of the unique
-        items from list_a.
+    def get_conditional_complements(list_a, list_b):
+        """ Helper method for determing if None values from list_b "complement"
+        a set of unique items in list_a. Returns the unique items from list_a.
 
-        An overlay is defined as a unique value in list_a which
-        corresponds 1:1 with None values in list_b in the same list position.
+        A conditional complement is defined as a set of unique values in list_a
+        which have no overlap with the set of values which result in None
+        values in list_b.
         This function is used to determine "conditionality", meaning the result
-        in list_a potentially is one which ended the line of questioning
-        in a survey (hence the corresponding None values in list_b).
+        in list_a is potentially one which ended the line of questioning
+        in a survey (hence the complementary None values in list_b).
         """
         # Create the list of overlay candidates
-        a_matches = [a for a, b in zip(list_a, list_b) if b is None]
-        if not a_matches:
-            return None
+        a_null_matches = [a for a, b in zip(list_a, list_b)
+                          if a is not None and b is None]
+        if not a_null_matches:
+            return []
 
-        # If a_matches contains all of the same values
-        if (len(a_matches) != a_matches.count(a_matches[0])):
-            return None
+        # Create a list of all results not corresponding to a None result in b
+        comp_a_null_matches = [a for a, b in zip(list_a, list_b)
+                               if a is not None and b is not None]
 
-        # If >1 result overlays a None value
-        if (len(a_matches) != list_a.count(a_matches[0])):
-            return None
+        num_responses_required = len(comp_a_null_matches)
+        results_hash = {}
+        # build a hash, counting the # of times a result appears
+        for results in comp_a_null_matches:
+            if isinstance(results, tuple):
+                for res in results:
+                    if res in results_hash:
+                        results_hash[res] += 1
+                    else:
+                        results_hash[res] = 1
+            elif results in results_hash:
+                results_hash[results] += 1
+            else:
+                results_hash[results] = 1
 
-        # Create a set of all results not corresponding to a None result in b
-        all_conds = set(
-            [c_val for c_val in list_a if c_val and c_val != a_matches[0]]
-        )
-
-        # if > 1 result in the complement of a_matches
-        if len(all_conds) != 1:
-            # (If we wanted to include all unique results, return all_conds)
-            return None
-
-        # All results are the same, pop one off and return it as a scalar
-        return all_conds.pop()
+        conds = []
+        for res, count in results_hash.items():
+            # if the result exists for every non null in b,
+            # and it did not exist for any nulls in b
+            if count == num_responses_required and res not in a_null_matches:
+                conds.append(res)
+        return conds
 
 if __name__ == '__main__':
     # verify the example output when called via CLI

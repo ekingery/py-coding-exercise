@@ -38,16 +38,16 @@ class TestSurvey(unittest.TestCase):
             expected_test_result
         )
 
-    def test_get_conditional_overlay_value(self):
+    def test_get_conditional_complements(self):
         kinds_of_pets = [
             ["Dog", "Cat"], None, ["Dog"], ["Fish"], None, ["Dog", "Fish"]
         ]
         gender = ["M", "F", "F", "M", "F", "F"]
         have_pets = ["Yes", "No", "Yes", "Yes", "No", "Yes"]
-        self.assertIsNone(survey.Util.get_conditional_overlay_value(
+        self.assertEqual([], survey.Util.get_conditional_complements(
             gender, kinds_of_pets
         ))
-        self.assertEqual("Yes", survey.Util.get_conditional_overlay_value(
+        self.assertEqual(["Yes"], survey.Util.get_conditional_complements(
             have_pets, kinds_of_pets
         ))
 
@@ -65,7 +65,7 @@ class TestSurvey(unittest.TestCase):
         )
         # test case where there is a conditional match
         self.assertEqual(
-            [("Do you have pets?", "Yes")],
+            [("Do you have pets?", ["Yes"])],
             sd.get_conditionals(sample_data_slice2)
         )
 

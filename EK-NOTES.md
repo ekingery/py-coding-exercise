@@ -49,17 +49,14 @@ Once this data is stored as class member data (`self.conditionals`),
       if list of results contains no None(s), return | O(n)
       foreach q in dictionary of questions | O(m)
         return if results in q are all the same | O(n)
-        conditional_list.append(overlay(q, current_q)) | O(n)
+        conditional_list.append(complement(q, current_q)) | O(n)
       return conditional_list
 
-    overlay(list_a, list_b) O(n)
-      create a set of result matches from `a` which correspond with None items in `b` | O(n)
-      1. does each None in current_q correspond to the same result in q? | +O(n)
-        - if no, we do not have a determinant
-      2. does the result in q show up anywhere else (non None matching)? | +O(n)
-        - if yes, we do not have a determinant
-      3. Does the complement of the matching values contain all of the same result value? | +O(n)
-        - if yes, we have a determinant, return it
+    complement(list_a, list_b) O(n)
+      a_null_matches = result matches from `a` which correspond with None items in `b` | O(n)
+      comp_a_null_matches = the complement of a_null_matches | O(n)
+      if an item from comp_a_null_matches corresponds to every non-None result 
+        and does not appear in the a_null_matches list, we have a conditional
 
 This solution has a time complexity of `O(m^2 * n)` assuming ordered dictionary 
 and list getters and appends are O(1).
@@ -81,7 +78,6 @@ and list getters and appends are O(1).
   * It looks like references are stored in parent_dataset. I'm assuming we're good
    here but worth further eval if this were production code / I had time to
    learn more about references in python!
-* I'm curious in the skip patterns sample data csv (from the interview / google doc), why "Where do you shop for pet food?" does not register "What kinds of pets do you have?" as a conditional. It seems correct that it doesn't, but I didn't see how/why None values would actually be getting filtered out and not overlay / matched on.
 
 #### Python3 Compatibility ####
 The first commit (c7a4ffe) contains the updates I found necessary for python3
