@@ -1,66 +1,97 @@
-Identifying Conditional Skip Patterns
-=====================================
+Eric K - Notes on Skip Patterns Exercise
+========================================
 
-**Note**: This is a private repository. Do not share it with anyone and please work on this alone.
+Existing Survey Data Set and Question Object Documentation
+----------------------------------------------------------
+The SurveyDataSet object takes a CSV in its constructor. __init__() parses every line 
+and builds an
+[OrderedDict](https://docs.python.org/3/library/collections.html#collections.OrderedDict) 
+containing the questions as keys to a list of data points (values / answers).
 
-Please feel free to contact us if you have any questions especially if what we're asking for isn't 100% clear – *tech@knowledgehound.com*.
+Once the data has been parsed into the ordered dictionary, the dictionary is
+iterated on, creating a list of new Question objects. A Question object stores
+the question name, the results for that question, and a reference to the
+"parent" SurveyDataSet object.
 
-The Challenge
--------------
+### Pseudocode ###
 
-As discussed in the first part of our technical interview, we want to determine which questions were shown to each respondent by reverse engineering the conditional statements that determine which users saw which questions in a survey. We'd like you to implement a simplified version of that functionality.
+    foreach survey_result (line in the csv) | O(n)
+      foreach question_result (column in the csv) | *O(m)
+        build the ordered dictionary (data) | * ((O(1) lookup + O(1) append))
+    foreach question in ordered dictionary (column in the csv) | O(m)
+      create a new question and append it to the member data list | O(1) append
 
-In this portion of the interview, we're interested in your craftsmanship: the quality of your work. Please treat this as you would a pull request to a serious collaborative work. Engineer your code to meet your professional standards and include anything else you'd include if you were submitting this for work.
+This solution has a time complexity of `O(n * m)` assuming ordered dictionary 
+and list getters and appends are O(1).
+[(Reference)](https://wiki.python.org/moin/TimeComplexity)
 
-The Spec
---------
+* n = # of rows (results) in the csv
+* m = # of columns (questions) in the csv
 
-The *survey.py* file in this repository represents an existing codebase. Please modify it so that each question can report the question(s), if any, which determined whether or not it was shown to a respondent.
+Solution Documentation
+----------------------
+In order to implement `Question.get_conditionals()`, we want to pre-compute and store
+the list of Questions which could be determiners for each Question in the survey.
 
-In particular, implement the method, `get_conditionals()` on `Question` which returns a list of dictionaries showing which conditionals determined the visibility of that instance of `Question`.
+Once this data is stored as class member data (`self.conditionals`),
+`get_conditionals()` can be implemented as a simple getter for that data.
 
-Example of a working implementation processing *simple_sample.csv*:
+### Solution Pseudocode ###
 
-    >>> import survey
-    >>> dataset = survey.SurveyDataSet('simple_sample.csv')
-    >>> pets = dataset.get_question("Do you have pets?")
-    >>> print(pets.get_conditionals())
-    []
-    >>> dogs = dataset.get_question("Do you have a dog?")
-    >>> print(dogs.get_conditionals())
-    [{'where_response_equals': 'Yes', 'determined_by': <Question: Do you have pets?>}]
+    foreach survey_result (line in the csv) | O(n)
+      foreach question_result (column in the csv) | *O(m)
+        build the ordered dictionary (data) | *((O(1) lookup + O(1) append))
+    foreach question in ordered dictionary (column in the csv) | O(m)
+      get_conditionals(ordered dictionary from first to current element) | *O(m * n)
+      create a new question and append it to the member data list | O(1) append
 
-Guidelines
-----------
+    get_conditionals(list of questions): O(m * n)
+      if list of results contains no None(s), return | O(n)
+      foreach q in dictionary of questions | O(m)
+        return if results in q are all the same | O(n)
+        conditional_list.append(complement(q, current_q)) | O(n)
+      return conditional_list
 
-**Functionality**
+    complement(list_a, list_b) O(n)
+      a_null_matches = result matches from `a` which correspond with None items in `b` | O(n)
+      comp_a_null_matches = the complement of a_null_matches | O(n)
+      if an item from comp_a_null_matches corresponds to every non-None result 
+        and does not appear in the a_null_matches list, we have a conditional
 
- - Your solution only needs to work for radio-button questions. That includes True/False or "Select exactly one of the following". The literal answer provided by the user is the value of the cell. If the cell is an empty string, the user did not see and therefore did not respond to that question
+This solution has a time complexity of `O(m^2 * n)` assuming ordered dictionary 
+and list getters and appends are O(1).
+[(Reference)](https://wiki.python.org/moin/TimeComplexity)
 
- - You need only check for equality "==" conditions. For example, if "Do you eat bacon?" was shown only to people whose favorite color was red. You do not need to report inequality conditions (e.g. "only shown to people whose favorite band was NOT nickelback). You do not need to check for complicated AND/OR conditions.
+* n = # of rows (results) in the csv
+* m = # of columns (questions) in the csv
 
- - Questions to which all respondents gave the same answer, by convention, can't be a determiner. For example if all respondents report "Human" to the question "Are you a human or a robot?", that question should never appear as a determiner of other questions.
+### Misc. Notes / TODO Time Permitting ###
+  * I spent about 3 hours figuring out the current code and the solution
+  * I spent about 6 hours writing python code
 
- - The column order in the CSV file represents the order in the survey -- questions which occur later in the survey can't be used to determine whether questions before them were seen (no time travel!).
+#### Technical Notes / Concerns ####
+* I would be curious to run this against a larger data set, to spot check for
+    correctness and to get a sense for real-world runtime
+* For the `self.conditional` member data, check that references to the objects are passed / stored,
+  as opposed to copies.
+  * It looks like references are stored in parent_dataset. I'm assuming we're good
+   here but worth further eval if this were production code / I had time to
+   learn more about references in python!
 
- - You can assume the CSV file is simple, valid and contiguous (no tricky empty rows, extra commas, quotes).
+#### Python3 Compatibility ####
+The first commit (c7a4ffe) contains the updates I found necessary for python3
+compatibility. Ordinarily I would include these changes in a separate PR, but 
+in this case given I don't have PR access to the originally forked repo. 
+The following are my notes (I would typically include these in a PR):
 
- - All question labels (the first row of the CSV) will be unique. No trickery from us there.
-
-**Other**
-
- - Use Python, its standard library, and any dependencies you would include if this were code going to production.
-
- - Performance is important. This should work relatively quickly on datasets with up to 2,000 questions and 50,000 respondents. Please limit performance optimizations to native Python. In our use case, a file is only parsed once when a user uploads it but each question's possible conditionals will be accessed repeatedly by end users. You may ignore persistence and assume this code runs in memory.
-
- - Extensibility is important. In the real world, there are many subclasses of `Question`. For example, some questions are numeric and others allow people to "check all that apply".
-
- - Please present your work in the form of a pull request to this repository.
-
- - We hope that you can complete this on your own, but if the requirements aren't clear or something seems wrong, ask questions. We're humans... we make mistakes!
-
- - The code we're providing you isn't perfect. Change it where you need to. Thoughtful critiques are welcome.
-
-Happy Hacking!
-
-– The KH Team
+* Removed `unicode` and `str` magic methods no longer necessary in python3
+* Tweaked line length to adhere to [PEP-8](https://www.python.org/dev/peps/pep-0008/)
+* Simplified the csv open
+  * 'r' is default, 'b' is no longer necessary, [U is deprecated](https://docs.python.org/3/library/functions.html#open)
+* `__repr__` as written was causing an infinite recursive loop
+  * I wonder why?
+  * I made the output format match the original implementation, 
+   however it seems that using `__str__()` as opposed to `__repr__()`
+   might be preferred because `repr()` is suggested to return a 
+   [valid python expression](https://docs.python.org/3/library/functions.html#repr)
+  * I found the previous two items worth noting, but not worth spending much time on
